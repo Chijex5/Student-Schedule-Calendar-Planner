@@ -80,8 +80,7 @@ export const ScheduleCard: React.FC<ScheduleCardProps> = ({
         View Schedule
         <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-[#26A69A] transition-all duration-300 group-hover:w-full" />
       </button>
-      <Trash2 className="text-[#FF6B6B] cursor-pointer" 
-      onClick={(e) => {
+      <Trash2 className="text-[#FF6B6B] cursor-pointer" onClick={e => {
         e.stopPropagation();
         remove(schedule.id);
       }} />

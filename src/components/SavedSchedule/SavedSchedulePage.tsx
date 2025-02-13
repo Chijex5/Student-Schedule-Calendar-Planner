@@ -1,9 +1,9 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useState, Component } from "react";
 import { useParams } from "react-router-dom";
 import { LiquidProgressBar } from "./LiquidProgressBar";
 import { ViewToggle } from "./ViewToggle";
 import { getSavedSchedules, SavedSchedule } from "../../utils/scheduleStorage";
-import { ChevronLeft, ChevronRight, Calendar1 } from "lucide-react";
+import { ChevronLeft, ChevronRight, Calendar } from "lucide-react";
 import { TaskCard } from "./TaskCard";
 import Confetti from "react-confetti";
 import { ReportComponent } from "./ReportComponent";
@@ -22,14 +22,11 @@ const getWeekDates = (date: Date): Date[] => {
     return day;
   });
 };
-
 const getMonthDates = (date: Date): (Date | null)[] => {
   const start = new Date(date.getFullYear(), date.getMonth(), 1);
   const end = new Date(date.getFullYear(), date.getMonth() + 1, 0);
   const days: (Date | null)[] = [];
-
   const offset = (start.getDay() + 6) % 7;
-
   for (let i = 0; i < offset; i++) {
     days.push(null);
   }
@@ -42,7 +39,6 @@ const getMonthDates = (date: Date): (Date | null)[] => {
   }
   return days;
 };
-
 export const SavedSchedulePage = () => {
   const {
     id
@@ -68,7 +64,6 @@ export const SavedSchedulePage = () => {
     setCurrentView(view);
     setCurrentDate(new Date()); // Reset to current date when changing views
   };
-  
   const handleDateNavigation = (direction: "prev" | "next") => {
     const newDate = new Date(currentDate);
     const modifier = direction === "prev" ? -1 : 1;
@@ -87,26 +82,28 @@ export const SavedSchedulePage = () => {
   };
   const complete = (id: string, complete: boolean, date: string) => {
     const updated = updateTaskCompletion(id, date, complete);
-          if (updated) {
-            setSchedule(updated);
-            // Update progress
-            const completed = updated.scheduleData.filter(item => item.completed).length;
-            setShowConfetti(true);
-            setShowOverlay(true);
-            setTimeout(() => {
-              setShowConfetti(false);
-              setShowOverlay(false);
-            }, 3000);
-            setProgress(Math.round(completed / updated.scheduleData.length * 100));
-          }
-  }
+    if (updated) {
+      setSchedule(updated);
+      // Update progress
+      const completed = updated.scheduleData.filter(item => item.completed).length;
+      setShowConfetti(true);
+      setShowOverlay(true);
+      setTimeout(() => {
+        setShowConfetti(false);
+        setShowOverlay(false);
+      }, 3000);
+      setProgress(Math.round(completed / updated.scheduleData.length * 100));
+    }
+  };
   const renderDailyView = () => {
     const dateStr = currentDate.toISOString().split("T")[0];
     const tasks = schedule?.scheduleData.filter(item => item.date === dateStr) || [];
     const isToday = currentDate.toDateString() === new Date().toDateString();
     return <div className="bg-white/5 backdrop-blur-md rounded-xl p-6">
-      {showOverlay && <div className="absolute inset-0 flex items-center z-100 justify-center animate-fade-in">
-            <p className="text-white text-2xl font-bold">🎉 Amazing! One step closer!</p>
+        {showOverlay && <div className="absolute inset-0 flex items-center z-100 justify-center animate-fade-in">
+            <p className="text-white text-2xl font-bold">
+              🎉 Amazing! One step closer!
+            </p>
           </div>}
         {showConfetti && <Confetti colors={["#E040FB", "#26A69A", "#FFFFFF"]} recycle={false} numberOfPieces={200} />}
         <div className="flex items-center justify-between mb-6">
@@ -122,24 +119,12 @@ export const SavedSchedulePage = () => {
             </span>}
         </div>
         <div className="space-y-4">
-        {tasks.length === 0 ? (
-          // Gracefully show a message when there are no tasks for the day.
-          <div className="text-center text-white font-medium flex items-center gap-2 px-4 py-2">
-            
-            <Calendar1 />
-            <span>No tasks scheduled for this day.</span>
-          </div>
-        ) : (
-          tasks.map((task, i) => 
-          <TaskCard
-            key={i}
-            subject={task.subject}
-            date={task.date}
-            status={getTaskStatus(task.date, task.completed)}
-            complete={schedule?.id ? () => complete(schedule.id!, true, task.date) : undefined}
-            onComplete={isToday && task.completed ? () => {} : undefined}
-          />
-        ))}
+          {tasks.length === 0 ?
+        // Gracefully show a message when there are no tasks for the day.
+        <div className="text-center text-white font-medium flex items-center gap-2 px-4 py-2">
+              <Calendar />
+              <span>No tasks scheduled for this day.</span>
+            </div> : tasks.map((task, i) => <TaskCard key={i} subject={task.subject} date={task.date} status={getTaskStatus(task.date, task.completed)} complete={schedule?.id ? () => complete(schedule.id!, true, task.date) : undefined} onComplete={isToday && task.completed ? () => {} : undefined} />)}
         </div>
       </div>;
   };
@@ -176,59 +161,57 @@ export const SavedSchedulePage = () => {
       </div>;
   };
   const renderMonthlyView = () => {
-    // Get the month days with placeholders included.
     const monthDays = getMonthDates(currentDate);
-  
-    return (
-      <div className="bg-white/5 backdrop-blur-md rounded-xl p-6">
+    const isMobile = window.innerWidth < 768;
+    return <div className="bg-white/5 backdrop-blur-md rounded-xl p-2 md:p-6">
         <div className="grid grid-cols-7 gap-1">
-          {["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map((day) => (
-            <div key={day} className="text-[#E0B0FF] text-sm text-center p-2">
+          {["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map(day => <div key={day} className="hidden md:block text-[#E0B0FF] text-sm text-center p-2">
               {day}
-            </div>
-          ))}
-            {monthDays.map((date: Date | null, i: number) => {
-            // If there is no date, render an empty cell.
-            if (!date) {
-              return <div key={i} className="min-h-[100px] p-2" />;
-            }
-        
-            const dateStr = date.toISOString().split("T")[0];
-            const tasks = schedule?.scheduleData.filter(
-              (item: { date: string }) => item.date === dateStr
-            ) || [];
-        
-            return (
-              <div
-              key={i}
-              className={`
-                min-h-[100px] p-2 rounded-lg
-                ${getTaskColor(date, tasks[0]?.completed)}
-                transition-all duration-300 hover:bg-white/15
-              `}
-              >
-              <div className="text-white font-medium mb-1">
-                {date.getDate()}
-              </div>
-              <div className="space-y-1">
-                {tasks.map((task: { subject: string }, j: number) => (
-                <div
-                  key={j}
-                  className="text-[#E0B0FF] text-xs truncate"
-                  title={task.subject}
-                >
-                  • {task.subject}
+            </div>)}
+          {["M", "T", "W", "T", "F", "S", "S"].map(day => <div key={day} className="md:hidden text-[#E0B0FF] text-xs text-center p-1">
+              {day}
+            </div>)}
+          {monthDays.map((date: Date | null, i: number) => {
+          if (!date) {
+            return <div key={i} className="min-h-[40px] md:min-h-[100px] p-1 md:p-2" />;
+          }
+          const dateStr = date.toISOString().split("T")[0];
+          const tasks = schedule?.scheduleData.filter((item: {
+            date: string;
+          }) => item.date === dateStr) || [];
+          const isToday = date.toDateString() === new Date().toDateString();
+          return <div key={i} className={`
+                  relative
+                  min-h-[40px] md:min-h-[100px] 
+                  p-1 md:p-2 
+                  rounded-lg
+                  ${getTaskColor(date, tasks[0]?.completed)}
+                  transition-all duration-300 
+                  hover:bg-white/15
+                  ${isToday ? "ring-1 ring-[#E040FB]" : ""}
+                `}>
+                <div className={`
+                  text-white font-medium 
+                  text-xs md:text-sm
+                  ${isToday ? "text-[#E040FB]" : ""}
+                `}>
+                  {date.getDate()}
                 </div>
-                ))}
-              </div>
-              </div>
-            );
-            })}
+                <div className="md:hidden">
+                  {tasks.length > 0 && <div className="mt-1 w-2 h-2 rounded-full bg-[#E040FB]" />}
+                </div>
+                <div className="hidden md:block space-y-1 mt-1">
+                  {tasks.map((task: {
+                subject: string;
+              }, j: number) => <div key={j} className="text-[#E0B0FF] text-xs truncate" title={task.subject}>
+                        • {task.subject}
+                      </div>)}
+                </div>
+              </div>;
+        })}
         </div>
-      </div>
-    );
+      </div>;
   };
-  
   const getTaskColor = (date: Date, completed?: boolean) => {
     const status = getTaskStatus(date.toISOString().split("T")[0], completed);
     switch (status) {
@@ -245,7 +228,6 @@ export const SavedSchedulePage = () => {
   if (!schedule) return null;
   return <main className="min-h-screen w-full bg-[#2D0A54] px-4 py-8 md:px-8">
       <div className="max-w-6xl mx-auto">
-        
         <div className="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
           <h1 className="text-white text-3xl font-bold">{schedule.name}</h1>
           <ViewToggle currentView={currentView} onViewChange={handleViewChange} />
@@ -274,10 +256,9 @@ export const SavedSchedulePage = () => {
             <LiquidProgressBar progress={progress} />
           </div>
           <div className="bg-white/5 backdrop-blur-md rounded-xl p-6">
-          <ReportComponent scheduleData={schedule.scheduleData} />
+            <ReportComponent scheduleData={schedule.scheduleData} />
+          </div>
         </div>
-        </div>
-        
       </div>
     </main>;
 };

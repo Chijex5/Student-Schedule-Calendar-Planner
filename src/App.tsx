@@ -3,7 +3,7 @@ import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import { HomePage } from "./components/HomePage";
 import { CalendarGenerator } from "./components/CalendarGenerator/CalendarGenerator";
 import { SavedSchedulePage } from "./components/SavedSchedule/SavedSchedulePage";
-import DataManagementPage from "./components/DataManagementPage"
+import DataManagementPage from "./components/DataManagementPage";
 import { Navbar } from "./components/Navigation/Navbar";
 export function App() {
   return <Router>

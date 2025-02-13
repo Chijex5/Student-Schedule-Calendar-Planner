@@ -9,7 +9,6 @@ export const HomePage = () => {
     x: number;
     y: number;
   } | null>(null);
-
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
     const rect = e.currentTarget.getBoundingClientRect();
     setRipplePos({
@@ -24,7 +23,7 @@ export const HomePage = () => {
   const handleRemove = (id: string) => {
     const newSchedules = removeScheduleById(id);
     setSavedSchedules(newSchedules);
-  }
+  };
   return <main className="min-h-screen w-full bg-gradient-to-b from-[#2D0A54] to-[#6A1B9A] px-4 py-8 md:px-8" onMouseMove={handleMouseMove} onMouseLeave={() => setRipplePos(null)}>
     {ripplePos && <div className="absolute pointer-events-none" style={{
       left: ripplePos.x,
