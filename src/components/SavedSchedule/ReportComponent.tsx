@@ -159,13 +159,15 @@ export const ReportComponent: React.FC<ReportComponentProps> = ({
     </motion.div>;
   return <div className="space-y-6">
       <div className="grid grid-cols-2 gap-4">
-        <MetricCard icon={CheckCircle2} title="Completion Rate" value={`${successRate}%`} color="bg-[#26A69A]/20" subtitle="Of all due tasks" onClick={() => setSelectedMetric("progress")} isSelected={selectedMetric === "progress"} />
-        <MetricCard icon={Zap} title="Current Streak" value={currentStreak} color="bg-[#E040FB]/20" subtitle={`Best: ${maxStreak} days`} onClick={() => setSelectedMetric("streak")} isSelected={selectedMetric === "streak"} />
+        <MetricCard icon={CheckCircle2} title="Days Completed" value={completedDays} color="bg-[#26A69A]/20" subtitle="Tasks finished" />
+        <MetricCard icon={XCircle} title="Days Missed" value={missedDays} color="bg-[#FF5252]/20" subtitle="Need attention" />
+        <MetricCard icon={Clock} title="Days Remaining" value={remainingDays} color="bg-[#2196F3]/20" subtitle="Coming up" />
+        <MetricCard icon={Zap} title="Current Streak" value={currentStreak} color="bg-[#E040FB]/20" subtitle={`Best: ${maxStreak} days`} />
       </div>
       <div className="grid grid-cols-3 gap-4">
-        <AchievementBadge icon={Target} title="Accuracy" value={`${successRate}% On Track`} />
-        <AchievementBadge icon={Award} title="Streak" value={`${currentStreak} Days`} />
-        <AchievementBadge icon={CalendarIcon} title="Completed" value={`${completedDays} Tasks`} />
+        <AchievementBadge icon={Target} title="Success Rate" value={`${successRate}%`} />
+        <AchievementBadge icon={Award} title="Completion" value={`${completedDays}/${totalDays}`} />
+        <AchievementBadge icon={CalendarIcon} title="Streak" value={`${currentStreak} Days`} />
       </div>
       <div className="bg-white/5 backdrop-blur-md rounded-xl p-4">
         <div className="flex justify-between text-[#E0B0FF] text-sm mb-2">
@@ -192,6 +194,10 @@ export const ReportComponent: React.FC<ReportComponentProps> = ({
           duration: 1,
           ease: "easeOut"
         }} className="absolute h-full bg-[#FF5252]" />
+        </div>
+        <div className="flex justify-between text-[#E0B0FF]/60 text-xs mt-2">
+          <span>{Math.round(completedDays / totalDays * 100)}% Complete</span>
+          <span>{Math.round(missedDays / totalDays * 100)}% Missed</span>
         </div>
       </div>
       <AnimatePresence mode="wait">
