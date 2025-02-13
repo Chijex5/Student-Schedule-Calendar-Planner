@@ -10,6 +10,7 @@ import { ReportComponent } from "./ReportComponent";
 import { updateTaskCompletion, getTaskStatus } from "../../utils/scheduleStorage";
 import { motion, AnimatePresence } from "framer-motion";
 import { Star, Trophy, Sparkles, PartyPopper, Award } from "lucide-react";
+import { NotFoundPage } from "../NotFoundPage";
 
 // Define the ViewType type
 type ViewType = "daily" | "weekly" | "monthly";
@@ -52,6 +53,7 @@ export const SavedSchedulePage = () => {
   const [schedule, setSchedule] = useState<SavedSchedule | null>(null);
   const [currentView, setCurrentView] = useState<ViewType>("daily");
   const [currentDate, setCurrentDate] = useState(new Date());
+  const [notFound, setNotFound] = useState(false);
   const [showConfetti, setShowConfetti] = useState(false);
   const [showOverlay, setShowOverlay] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -64,8 +66,11 @@ export const SavedSchedulePage = () => {
       setSchedule(found);
       const completed = found.scheduleData.filter(item => new Date(item.date) < new Date()).length;
       setProgress(Math.round(completed / found.scheduleData.length * 100));
+    } else {
+      setNotFound(true);
     }
   }, [id]);
+
   const handleViewChange = (view: ViewType) => {
     setCurrentView(view);
     setCurrentDate(new Date()); // Reset to current date when changing views
@@ -105,6 +110,10 @@ export const SavedSchedulePage = () => {
       setProgress(Math.round(completed / updated.scheduleData.length * 100));
     }
   };
+  if (notFound) {
+    return <NotFoundPage />;
+  }
+  
   const renderCelebration = () => {
     if (!celebrationType) return null;
     return <>

@@ -272,7 +272,10 @@ export const HomePage = () => {
           scale: 0.95
         }} onClick={() => navigate("/create")}>
             <CTAButton>
-              Get Started Now <ArrowRight className="ml-2" size={20} />
+              <div className="flex items-center gap-2">
+                <span>Get Started Now</span> 
+                <ArrowRight className="ml-2" size={20} />
+              </div>
             </CTAButton>
           </motion.div>
         </motion.div>
