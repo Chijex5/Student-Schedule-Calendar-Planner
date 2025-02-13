@@ -12,3 +12,66 @@
 .animate-ripple {
   animation: ripple 1s cubic-bezier(0.4, 0, 0.2, 1) forwards;
 }
+@import 'tailwindcss/base';
+@import 'tailwindcss/components';
+@import 'tailwindcss/utilities';
+
+@keyframes bounce-in {
+  0% { transform: scale(0.3); opacity: 0; }
+  50% { transform: scale(1.05); }
+  70% { transform: scale(0.9); }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-8px); }
+  75% { transform: translateX(8px); }
+}
+
+@keyframes ripple {
+  0% { transform: scale(0); opacity: 1; }
+  100% { transform: scale(2); opacity: 0; }
+}
+
+@keyframes slide-right {
+  0% { width: 0; }
+  100% { width: 100%; }
+}
+
+@keyframes fade-in {
+  0% { opacity: 0; }
+  100% { opacity: 1; }
+}
+
+button {
+  @apply transition-all duration-300;
+}
+
+button:not(:disabled),
+a[role="button"],
+.interactive {
+  @apply transition-all duration-300 hover:scale-[1.02] active:scale-[0.98];
+}
+
+.glass {
+  @apply backdrop-blur-md bg-white/10 border border-white/20;
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #2D0A54;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #6A1B9A;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #E040FB;
+}
