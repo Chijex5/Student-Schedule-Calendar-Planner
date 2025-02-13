@@ -6,6 +6,8 @@ import { Toast } from "./Toast";
 import { DateSelection } from "./DateSelection";
 import { GeneratedCalendar } from "../Calendar/GeneratedCalendar";
 import { generateSchedule, saveSchedule } from "../../utils/scheduleStorage";
+import { motion, AnimatePresence } from "framer-motion";
+import { Trophy, Star, Sparkles } from "lucide-react";
 export const CalendarGenerator = () => {
   const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState(1);
@@ -21,6 +23,7 @@ export const CalendarGenerator = () => {
     date: string;
     subject: string;
   }[]>([]);
+  const [showCelebration, setShowCelebration] = useState(false);
   const handleAddSubject = (e: React.FormEvent) => {
     e.preventDefault();
     const trimmedValue = inputValue.trim();
@@ -63,7 +66,11 @@ export const CalendarGenerator = () => {
       endDate,
       scheduleData
     });
-    navigate("/");
+    setShowCelebration(true);
+    setTimeout(() => {
+      setShowCelebration(false);
+      navigate("/");
+    }, 3000);
   };
   const handleRegenerate = () => {
     const generated = generateSchedule(subjects, startDate, endDate, false);
@@ -109,5 +116,80 @@ export const CalendarGenerator = () => {
         </div>
       </div>
       {showToast && <Toast message="This subject already exists!" onClose={() => setShowToast(false)} />}
+      <AnimatePresence>
+        {showCelebration && <motion.div initial={{
+        opacity: 0,
+        scale: 0.5
+      }} animate={{
+        opacity: 1,
+        scale: 1
+      }} exit={{
+        opacity: 0,
+        scale: 0.5
+      }} className="fixed inset-0 flex items-center justify-center z-50 bg-black/50 backdrop-blur-sm">
+            <motion.div className="bg-white/10 backdrop-blur-xl rounded-xl p-8 text-center max-w-md mx-4" initial={{
+          y: 50
+        }} animate={{
+          y: 0
+        }} exit={{
+          y: 50
+        }}>
+              <motion.div className="mb-6" animate={{
+            rotate: [0, 10, -10, 0],
+            scale: [1, 1.2, 1]
+          }} transition={{
+            duration: 0.5,
+            repeat: Infinity,
+            repeatType: "reverse"
+          }}>
+                <Trophy className="w-16 h-16 text-[#E040FB] mx-auto" />
+              </motion.div>
+              <h2 className="text-2xl font-bold text-white mb-4">
+                Congratulations!
+              </h2>
+              <p className="text-[#E0B0FF] mb-6">
+                You've taken an important step towards your learning goals. Your
+                study schedule has been created successfully!
+              </p>
+              <div className="flex justify-center gap-2">
+                {[...Array(5)].map((_, i) => <motion.div key={i} initial={{
+              opacity: 0,
+              scale: 0
+            }} animate={{
+              opacity: 1,
+              scale: 1
+            }} transition={{
+              delay: i * 0.1
+            }}>
+                    <Star className="w-6 h-6 text-[#E040FB]" fill="#E040FB" />
+                  </motion.div>)}
+              </div>
+              <motion.div className="absolute inset-0 pointer-events-none" initial={{
+            opacity: 0
+          }} animate={{
+            opacity: 1
+          }} exit={{
+            opacity: 0
+          }}>
+                {Array.from({
+              length: 3
+            }).map((_, i) => <motion.div key={i} className="absolute" initial={{
+              x: Math.random() * window.innerWidth,
+              y: window.innerHeight
+            }} animate={{
+              y: -100,
+              x: Math.random() * window.innerWidth
+            }} transition={{
+              duration: 2,
+              delay: i * 0.3,
+              repeat: Infinity,
+              repeatType: "loop"
+            }}>
+                    <Sparkles className="w-6 h-6 text-[#E040FB]" />
+                  </motion.div>)}
+              </motion.div>
+            </motion.div>
+          </motion.div>}
+      </AnimatePresence>
     </main>;
 };

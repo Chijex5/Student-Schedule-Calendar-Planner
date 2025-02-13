@@ -16,11 +16,13 @@ type ViewType = "daily" | "weekly" | "monthly";
 
 // Helper function to get week days
 const getWeekDates = (date: Date): Date[] => {
-  const start = new Date(date);
-  start.setDate(date.getDate() - date.getDay()); // Start of week (Sunday)
+  const monday = new Date(date);
+  const day = monday.getDay();
+  const diff = monday.getDate() - day + (day === 0 ? -6 : 1); // Adjust when day is Sunday
+  monday.setDate(diff);
   return Array(7).fill(null).map((_, i) => {
-    const day = new Date(start);
-    day.setDate(start.getDate() + i);
+    const day = new Date(monday);
+    day.setDate(monday.getDate() + i);
     return day;
   });
 };
@@ -76,7 +78,7 @@ export const SavedSchedulePage = () => {
         newDate.setDate(newDate.getDate() + modifier);
         break;
       case "weekly":
-        newDate.setDate(newDate.getDate() + modifier * 7);
+        newDate.setDate(newDate.getDate() + modifier * 5); // Change from 7 to 5 days
         break;
       case "monthly":
         newDate.setMonth(newDate.getMonth() + modifier);
@@ -240,20 +242,21 @@ export const SavedSchedulePage = () => {
       </div>;
   };
   const renderWeeklyView = () => {
-    const weekDays = getWeekDates(currentDate);
+    const weekDates = getWeekDates(currentDate);
     const today = new Date();
+    const weekdayDates = weekDates.slice(0, 5);
     return <div className="bg-white/5 backdrop-blur-md rounded-xl p-6">
         <div className="mb-6">
           <h2 className="text-white text-xl font-bold">
             Week of{" "}
-            {weekDays[0].toLocaleDateString("en-US", {
+            {weekDates[0].toLocaleDateString("en-US", {
             month: "long",
             day: "numeric"
           })}
           </h2>
         </div>
         <div className="grid grid-cols-5 gap-4">
-          {weekDays.slice(0, 5).map((date, i) => {
+          {weekdayDates.map((date, i) => {
           const dateStr = date.toISOString().split("T")[0];
           const tasks = schedule?.scheduleData.filter(item => item.date === dateStr) || [];
           const isToday = date.toDateString() === today.toDateString();
@@ -309,17 +312,18 @@ export const SavedSchedulePage = () => {
           if (!date) {
             return <div key={i} className="min-h-[40px] md:min-h-[100px] p-1 md:p-2" />;
           }
+          const isWeekend = date.getDay() === 0 || date.getDay() === 6;
           const dateStr = date.toISOString().split("T")[0];
-          const tasks = schedule?.scheduleData.filter((item: {
+          const tasks = !isWeekend ? schedule?.scheduleData.filter((item: {
             date: string;
-          }) => item.date === dateStr) || [];
+          }) => item.date === dateStr) || [] : [];
           const isToday = date.toDateString() === new Date().toDateString();
           return <div key={i} className={`
                 relative
                 min-h-[40px] md:min-h-[100px] 
                 p-1 md:p-2 
                 rounded-lg
-                ${getTaskColor(date, tasks[0]?.completed)}
+                ${isWeekend ? "bg-white/5" : getTaskColor(date, tasks[0]?.completed)}
                 transition-all duration-300 
                 hover:bg-white/15
                 ${isToday ? "ring-1 ring-[#E040FB]" : ""}
@@ -328,19 +332,22 @@ export const SavedSchedulePage = () => {
                   text-white font-medium 
                   text-xs md:text-sm
                   ${isToday ? "text-[#E040FB]" : ""}
+                  ${isWeekend ? "opacity-50" : ""}
                 `}>
                   {date.getDate()}
                 </div>
-                <div className="md:hidden">
-                  {tasks.length > 0 && <div className="mt-1 w-2 h-2 rounded-full bg-[#E040FB]" />}
-                </div>
-                <div className="hidden md:block space-y-1 mt-1">
-                  {tasks.map((task: {
-                subject: string;
-              }, j: number) => <div key={j} className="text-[#E0B0FF] text-xs truncate" title={task.subject}>
-                        • {task.subject}
-                      </div>)}
-                </div>
+                {!isWeekend && <>
+                    <div className="md:hidden">
+                      {tasks.length > 0 && <div className="mt-1 w-2 h-2 rounded-full bg-[#E040FB]" />}
+                    </div>
+                    <div className="hidden md:block space-y-1 mt-1">
+                      {tasks.map((task: {
+                  subject: string;
+                }, j: number) => <div key={j} className="text-[#E0B0FF] text-xs truncate" title={task.subject}>
+                            • {task.subject}
+                          </div>)}
+                    </div>
+                  </>}
               </div>;
         })}
         </div>

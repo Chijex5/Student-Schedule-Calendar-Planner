@@ -22,7 +22,7 @@ export const ReportComponent: React.FC<ReportComponentProps> = ({
     // Normalize today to UTC midnight
     const today = new Date();
     today.setUTCHours(0, 0, 0, 0);
-  
+
     // Build a set of completed dates (assume scheduleData already excludes weekends)
     const completedDates = new Set<string>();
     scheduleData.forEach(item => {
@@ -32,7 +32,7 @@ export const ReportComponent: React.FC<ReportComponentProps> = ({
         completedDates.add(itemDate.toISOString());
       }
     });
-  
+
     // Helper: Given a workday, return the previous workday.
     // (If it's Monday, the previous workday is Friday; otherwise subtract one day.)
     const getPreviousWorkday = (date: Date): Date => {
@@ -45,11 +45,10 @@ export const ReportComponent: React.FC<ReportComponentProps> = ({
       }
       return prev;
     };
-  
+
     // ----- Calculate current streak -----
     let currentStreak = 0;
     const todayISO = today.toISOString();
-  
     if (completedDates.has(todayISO)) {
       // Today is complete—start from today.
       currentStreak++;
@@ -70,7 +69,7 @@ export const ReportComponent: React.FC<ReportComponentProps> = ({
       const lastWorkday = getPreviousWorkday(today);
       if (completedDates.has(lastWorkday.toISOString())) {
         // Count today as pending (ongoing) streak.
-        currentStreak++; 
+        currentStreak++;
         let current = lastWorkday;
         while (true) {
           const prev = getPreviousWorkday(current);
@@ -84,17 +83,15 @@ export const ReportComponent: React.FC<ReportComponentProps> = ({
       }
       // Otherwise, the streak is 0.
     }
-  
+
     // ----- Calculate maximum streak (across all data) -----
     // Since scheduleData excludes weekends, we need to account for Friday -> Monday jumps.
-    const sortedDates = Array.from(completedDates)
-      .map(iso => {
-        const d = new Date(iso);
-        d.setUTCHours(0, 0, 0, 0);
-        return d;
-      })
-      .sort((a, b) => a.getTime() - b.getTime());
-  
+    const sortedDates = Array.from(completedDates).map(iso => {
+      const d = new Date(iso);
+      d.setUTCHours(0, 0, 0, 0);
+      return d;
+    }).sort((a, b) => a.getTime() - b.getTime());
+
     // Helper: Check if two dates are consecutive workdays.
     const isConsecutive = (prev: Date, current: Date): boolean => {
       const diff = current.getTime() - prev.getTime();
@@ -105,11 +102,9 @@ export const ReportComponent: React.FC<ReportComponentProps> = ({
       }
       return diff === oneDay;
     };
-  
     let maxStreak = 0;
     let tempStreak = 0;
     let prevDate: Date | null = null;
-  
     for (let i = 0; i < sortedDates.length; i++) {
       const date = sortedDates[i];
       if (prevDate === null) {
@@ -124,10 +119,11 @@ export const ReportComponent: React.FC<ReportComponentProps> = ({
       maxStreak = Math.max(maxStreak, tempStreak);
       prevDate = date;
     }
-  
-    return { currentStreak, maxStreak };
+    return {
+      currentStreak,
+      maxStreak
+    };
   };
-  
   const {
     currentStreak,
     maxStreak
