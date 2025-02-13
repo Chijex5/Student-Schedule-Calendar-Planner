@@ -8,6 +8,8 @@ import { TaskCard } from "./TaskCard";
 import Confetti from "react-confetti";
 import { ReportComponent } from "./ReportComponent";
 import { updateTaskCompletion, getTaskStatus } from "../../utils/scheduleStorage";
+import { motion, AnimatePresence } from "framer-motion";
+import { Star, Trophy, Sparkles, PartyPopper, Award } from "lucide-react";
 
 // Define the ViewType type
 type ViewType = "daily" | "weekly" | "monthly";
@@ -51,6 +53,8 @@ export const SavedSchedulePage = () => {
   const [showConfetti, setShowConfetti] = useState(false);
   const [showOverlay, setShowOverlay] = useState(false);
   const [progress, setProgress] = useState(0);
+  const [celebrationType, setCelebrationType] = useState<"confetti" | "achievement" | null>(null);
+  const [showAchievement, setShowAchievement] = useState(false);
   useEffect(() => {
     const schedules = getSavedSchedules();
     const found = schedules.find(s => s.id === id);
@@ -84,16 +88,125 @@ export const SavedSchedulePage = () => {
     const updated = updateTaskCompletion(id, date, complete);
     if (updated) {
       setSchedule(updated);
-      // Update progress
       const completed = updated.scheduleData.filter(item => item.completed).length;
-      setShowConfetti(true);
+      setCelebrationType("confetti");
       setShowOverlay(true);
+      setShowAchievement(true);
       setTimeout(() => {
-        setShowConfetti(false);
+        setCelebrationType("achievement");
+      }, 2000);
+      setTimeout(() => {
         setShowOverlay(false);
-      }, 3000);
+        setCelebrationType(null);
+        setShowAchievement(false);
+      }, 4000);
       setProgress(Math.round(completed / updated.scheduleData.length * 100));
     }
+  };
+  const renderCelebration = () => {
+    if (!celebrationType) return null;
+    return <>
+        {celebrationType === "confetti" && <Confetti width={window.innerWidth} height={window.innerHeight} numberOfPieces={200} recycle={false} colors={["#E040FB", "#26A69A", "#FFFFFF", "#FF4081", "#7C4DFF"]} gravity={0.3} tweenDuration={4000} />}
+        <AnimatePresence>
+          {showAchievement && <motion.div initial={{
+          scale: 0,
+          y: 50
+        }} animate={{
+          scale: 1,
+          y: 0
+        }} exit={{
+          scale: 0,
+          y: -50
+        }} className="fixed inset-0 flex items-center justify-center z-50 pointer-events-none">
+              <motion.div className="bg-white/10 backdrop-blur-xl rounded-xl p-8 text-center" initial={{
+            opacity: 0
+          }} animate={{
+            opacity: 1
+          }} exit={{
+            opacity: 0
+          }}>
+                <motion.div className="mb-4" animate={{
+              scale: [1, 1.2, 1],
+              rotate: [0, 10, -10, 0]
+            }} transition={{
+              duration: 0.5,
+              repeat: Infinity,
+              repeatType: "reverse"
+            }}>
+                  <div className="relative inline-block">
+                    <div className="absolute inset-0 animate-ping">
+                      <Trophy className="w-16 h-16 text-[#E040FB]" />
+                    </div>
+                    <Trophy className="w-16 h-16 text-[#E040FB] relative z-10" />
+                  </div>
+                </motion.div>
+                <motion.h2 className="text-2xl font-bold text-white mb-2" initial={{
+              opacity: 0,
+              y: 20
+            }} animate={{
+              opacity: 1,
+              y: 0
+            }} transition={{
+              delay: 0.2
+            }}>
+                  Task Completed!
+                </motion.h2>
+                <motion.p className="text-[#E0B0FF] mb-4" initial={{
+              opacity: 0
+            }} animate={{
+              opacity: 1
+            }} transition={{
+              delay: 0.4
+            }}>
+                  Keep up the amazing work!
+                </motion.p>
+                <motion.div className="flex justify-center gap-2" initial={{
+              opacity: 0
+            }} animate={{
+              opacity: 1
+            }} transition={{
+              delay: 0.6
+            }}>
+                  {[...Array(5)].map((_, i) => <motion.div key={i} initial={{
+                scale: 0
+              }} animate={{
+                scale: 1
+              }} transition={{
+                delay: 0.6 + i * 0.1,
+                type: "spring",
+                stiffness: 300
+              }}>
+                      <Star className="w-6 h-6 text-[#E040FB]" fill="#E040FB" />
+                    </motion.div>)}
+                </motion.div>
+              </motion.div>
+            </motion.div>}
+        </AnimatePresence>
+        <motion.div className="fixed inset-0 pointer-events-none" initial={{
+        opacity: 0
+      }} animate={{
+        opacity: 1
+      }} exit={{
+        opacity: 0
+      }}>
+          {Array.from({
+          length: 3
+        }).map((_, i) => <motion.div key={i} className="absolute" initial={{
+          x: Math.random() * window.innerWidth,
+          y: window.innerHeight
+        }} animate={{
+          y: -100,
+          x: Math.random() * window.innerWidth
+        }} transition={{
+          duration: 2,
+          delay: i * 0.3,
+          repeat: Infinity,
+          repeatType: "loop"
+        }}>
+              <Sparkles className="w-6 h-6 text-[#E040FB]" />
+            </motion.div>)}
+        </motion.div>
+      </>;
   };
   const renderDailyView = () => {
     const dateStr = currentDate.toISOString().split("T")[0];
@@ -123,6 +236,7 @@ export const SavedSchedulePage = () => {
               {tasks.map((task, i) => <TaskCard key={i} subject={task.subject} date={task.date} status={getTaskStatus(task.date, task.completed)} complete={schedule?.id ? () => complete(schedule.id!, true, task.date) : undefined} onComplete={isToday && task.completed ? () => {} : undefined} />)}
             </div>}
         </div>
+        {renderCelebration()}
       </div>;
   };
   const renderWeeklyView = () => {
