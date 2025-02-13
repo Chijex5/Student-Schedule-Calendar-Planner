@@ -99,32 +99,29 @@ export const SavedSchedulePage = () => {
     const dateStr = currentDate.toISOString().split("T")[0];
     const tasks = schedule?.scheduleData.filter(item => item.date === dateStr) || [];
     const isToday = currentDate.toDateString() === new Date().toDateString();
-    return <div className="bg-white/5 backdrop-blur-md rounded-xl p-6">
-        {showOverlay && <div className="absolute inset-0 flex items-center z-100 justify-center animate-fade-in">
-            <p className="text-white text-2xl font-bold">
-              🎉 Amazing! One step closer!
-            </p>
-          </div>}
-        {showConfetti && <Confetti colors={["#E040FB", "#26A69A", "#FFFFFF"]} recycle={false} numberOfPieces={200} />}
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-white text-xl font-bold">
-            {currentDate.toLocaleDateString("en-US", {
-            weekday: "long",
-            month: "long",
-            day: "numeric"
-          })}
-          </h2>
-          {isToday && <span className="bg-[#E040FB] px-3 py-1 rounded-full text-sm text-white">
-              Today
-            </span>}
-        </div>
-        <div className="space-y-4">
-          {tasks.length === 0 ?
-        // Gracefully show a message when there are no tasks for the day.
-        <div className="text-center text-white font-medium flex items-center gap-2 px-4 py-2">
-              <Calendar />
-              <span>No tasks scheduled for this day.</span>
-            </div> : tasks.map((task, i) => <TaskCard key={i} subject={task.subject} date={task.date} status={getTaskStatus(task.date, task.completed)} complete={schedule?.id ? () => complete(schedule.id!, true, task.date) : undefined} onComplete={isToday && task.completed ? () => {} : undefined} />)}
+    return <div className="space-y-6">
+        <div className="bg-white/5 backdrop-blur-md rounded-xl p-6">
+          <div className="flex items-center justify-between mb-8">
+            <h2 className="text-white text-2xl font-bold">
+              {currentDate.toLocaleDateString("en-US", {
+              weekday: "long",
+              month: "long",
+              day: "numeric"
+            })}
+            </h2>
+            {isToday && <span className="px-4 py-1.5 bg-[#E040FB]/20 text-[#E040FB] rounded-full text-sm font-medium">
+                Today
+              </span>}
+          </div>
+          {tasks.length === 0 ? <div className="text-center py-12 backdrop-blur-md bg-white/5 rounded-xl border border-white/10">
+              <Calendar className="mx-auto text-[#E0B0FF] mb-4" size={32} />
+              <p className="text-white font-medium">No tasks scheduled</p>
+              <p className="text-[#E0B0FF] text-sm mt-1">
+                Take this time to review or rest
+              </p>
+            </div> : <div className="space-y-4">
+              {tasks.map((task, i) => <TaskCard key={i} subject={task.subject} date={task.date} status={getTaskStatus(task.date, task.completed)} complete={schedule?.id ? () => complete(schedule.id!, true, task.date) : undefined} onComplete={isToday && task.completed ? () => {} : undefined} />)}
+            </div>}
         </div>
       </div>;
   };
@@ -132,28 +129,51 @@ export const SavedSchedulePage = () => {
     const weekDays = getWeekDates(currentDate);
     const today = new Date();
     return <div className="bg-white/5 backdrop-blur-md rounded-xl p-6">
-        <div className="grid grid-cols-7 gap-4">
-          {weekDays.map((date, i) => {
+        <div className="mb-6">
+          <h2 className="text-white text-xl font-bold">
+            Week of{" "}
+            {weekDays[0].toLocaleDateString("en-US", {
+            month: "long",
+            day: "numeric"
+          })}
+          </h2>
+        </div>
+        <div className="grid grid-cols-5 gap-4">
+          {weekDays.slice(0, 5).map((date, i) => {
           const dateStr = date.toISOString().split("T")[0];
           const tasks = schedule?.scheduleData.filter(item => item.date === dateStr) || [];
           const isToday = date.toDateString() === today.toDateString();
+          const isPast = date < today;
+          const status = tasks[0]?.completed ? "completed" : isPast ? "missed" : isToday ? "today" : "upcoming";
           return <div key={i} className={`
-                  rounded-lg p-3 
-                  ${isToday ? "bg-[#E040FB]/20" : "bg-white/10"}
-                  transition-all duration-300 hover:bg-white/15
+                  rounded-xl p-4
+                  backdrop-blur-md
+                  ${isToday ? "bg-[#E040FB]/20 ring-2 ring-[#E040FB]" : "bg-white/5"}
+                  transition-all duration-300
+                  hover:bg-white/10
                 `}>
-                <div className="text-center mb-2">
-                  <div className="text-[#E0B0FF] text-sm">
+                <div className="text-center mb-4">
+                  <div className="text-[#E0B0FF] text-sm mb-1">
                     {date.toLocaleDateString("en-US", {
                   weekday: "short"
                 })}
                   </div>
-                  <div className="text-white font-bold">{date.getDate()}</div>
+                  <div className="text-white text-xl font-bold">
+                    {date.getDate()}
+                  </div>
                 </div>
                 <div className="space-y-2">
-                  {tasks.map((task, j) => <div key={j} className="text-white text-sm p-1 rounded bg-white/5">
+                  {tasks.map((task, j) => <div key={j} className={`
+                        p-3 rounded-lg text-sm
+                        ${task.completed ? "bg-[#26A69A]/20 text-[#26A69A]" : isPast ? "bg-[#FF5252]/20 text-[#FF5252]" : "bg-white/10 text-white"}
+                      `}>
                       {task.subject}
                     </div>)}
+                  {tasks.length === 0 && <div className="text-center py-3">
+                      <span className="text-[#E0B0FF]/60 text-sm">
+                        No tasks
+                      </span>
+                    </div>}
                 </div>
               </div>;
         })}
@@ -181,15 +201,15 @@ export const SavedSchedulePage = () => {
           }) => item.date === dateStr) || [];
           const isToday = date.toDateString() === new Date().toDateString();
           return <div key={i} className={`
-                  relative
-                  min-h-[40px] md:min-h-[100px] 
-                  p-1 md:p-2 
-                  rounded-lg
-                  ${getTaskColor(date, tasks[0]?.completed)}
-                  transition-all duration-300 
-                  hover:bg-white/15
-                  ${isToday ? "ring-1 ring-[#E040FB]" : ""}
-                `}>
+                relative
+                min-h-[40px] md:min-h-[100px] 
+                p-1 md:p-2 
+                rounded-lg
+                ${getTaskColor(date, tasks[0]?.completed)}
+                transition-all duration-300 
+                hover:bg-white/15
+                ${isToday ? "ring-1 ring-[#E040FB]" : ""}
+              `}>
                 <div className={`
                   text-white font-medium 
                   text-xs md:text-sm
