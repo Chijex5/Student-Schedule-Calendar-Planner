@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from "react";
-import { CheckCircle2, XCircle, Clock, TrendingUp, Frown, Meh, Smile, Star } from "lucide-react";
+import React, { useEffect, useState, Component } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { CheckCircle2, XCircle, Clock, TrendingUp, Frown, Meh, Smile, Star, Award, Zap, Target, Calendar as CalendarIcon } from "lucide-react";
 interface ReportComponentProps {
   scheduleData: Array<{
     date: string;
@@ -9,15 +10,34 @@ interface ReportComponentProps {
 export const ReportComponent: React.FC<ReportComponentProps> = ({
   scheduleData
 }) => {
-  // Calculate metrics
   const [feedback, setFeedback] = useState<{
     message: string;
     title: string;
     icon: JSX.Element;
   } | null>(null);
+  const [selectedMetric, setSelectedMetric] = useState<string>("progress");
   const today = new Date();
   today.setHours(0, 0, 0, 0);
-  const totalDays = scheduleData.length;
+  const calculateStreak = () => {
+    let currentStreak = 0;
+    let maxStreak = 0;
+    scheduleData.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()).forEach((item, index) => {
+      if (item.completed) {
+        currentStreak++;
+        maxStreak = Math.max(maxStreak, currentStreak);
+      } else {
+        currentStreak = 0;
+      }
+    });
+    return {
+      currentStreak,
+      maxStreak
+    };
+  };
+  const {
+    currentStreak,
+    maxStreak
+  } = calculateStreak();
   const getMotivationalFeedback = (successRate: number) => {
     const feedback = {
       poor: {
@@ -68,7 +88,6 @@ export const ReportComponent: React.FC<ReportComponentProps> = ({
     if (item.completed) {
       acc.completedDays++;
     } else if (itemDate < today) {
-      // Changed: compare with "today" instead of "now"
       acc.missedDays++;
     } else if (itemDate >= today) {
       acc.remainingDays++;
@@ -79,77 +98,125 @@ export const ReportComponent: React.FC<ReportComponentProps> = ({
     missedDays: 0,
     remainingDays: 0
   });
-  const successRate: number = Math.round(completedDays / (completedDays + missedDays) * 100) || 0;
+  const totalDays = scheduleData.length;
+  const successRate = Math.round(completedDays / (completedDays + missedDays) * 100) || 0;
   useEffect(() => {
     setFeedback(getMotivationalFeedback(successRate));
   }, [successRate]);
   const MetricCard = ({
-    icon,
+    icon: Icon,
     title,
     value,
-    color
+    color,
+    subtitle,
+    onClick,
+    isSelected
   }: {
-    icon: React.ReactNode;
+    icon: any;
     title: string;
-    value: number;
+    value: number | string;
     color: string;
-  }) => <div className="flex items-center p-4 bg-white/5 backdrop-blur-md rounded-xl gap-4">
-      <div className={`p-3 rounded-full ${color}`}>
-        {icon}
+    subtitle?: string;
+    onClick?: () => void;
+    isSelected?: boolean;
+  }) => <motion.div whileHover={{
+    y: -4
+  }} onClick={onClick} className={`
+        flex items-center p-4 backdrop-blur-md rounded-xl gap-4 cursor-pointer
+        transition-all duration-300
+        ${isSelected ? "ring-2 ring-[#E040FB]" : ""}
+        ${color}
+      `}>
+      <div className="p-3 rounded-full bg-white/10">
+        <Icon className="text-white" size={24} />
       </div>
       <div>
         <div className="text-[#E0B0FF] text-sm">{title}</div>
         <div className="text-white text-2xl font-bold">{value}</div>
+        {subtitle && <div className="text-[#E0B0FF]/70 text-xs mt-1">{subtitle}</div>}
       </div>
-    </div>;
-  return <div className="grid grid-cols-2 gap-4 w-full max-w-2xl mx-auto">
-      <MetricCard icon={<CheckCircle2 size={24} className="text-white" />} title="Days Completed" value={completedDays} color="bg-[#26A69A]/20" />
-      
-      <MetricCard icon={<XCircle size={24} className="text-white" />} title="Days Missed" value={missedDays} color="bg-[#FF5252]/20" />
-      
-      <MetricCard icon={<Clock size={24} className="text-white" />} title="Days Remaining" value={remainingDays} color="bg-[#2196F3]/20" />
-      
-      <MetricCard icon={<TrendingUp size={24} className="text-white" />} title="Success Rate" value={successRate} color="bg-[#E040FB]/20" />
-
-      {/* Progress breakdown footer */}
-      <div className="col-span-2 p-4 bg-white/5 backdrop-blur-md rounded-xl">
+    </motion.div>;
+  const AchievementBadge = ({
+    icon: Icon,
+    title,
+    value
+  }: {
+    icon: any;
+    title: string;
+    value: string;
+  }) => <motion.div initial={{
+    opacity: 0,
+    scale: 0.8
+  }} animate={{
+    opacity: 1,
+    scale: 1
+  }} className="flex flex-col items-center p-4 backdrop-blur-md rounded-xl bg-white/5">
+      <div className="p-3 rounded-full bg-[#E040FB]/20 mb-2">
+        <Icon className="text-[#E040FB]" size={24} />
+      </div>
+      <div className="text-white text-sm font-medium text-center">{title}</div>
+      <div className="text-[#E0B0FF] text-xs mt-1">{value}</div>
+    </motion.div>;
+  return <div className="space-y-6">
+      <div className="grid grid-cols-2 gap-4">
+        <MetricCard icon={CheckCircle2} title="Completion Rate" value={`${successRate}%`} color="bg-[#26A69A]/20" subtitle="Of all due tasks" onClick={() => setSelectedMetric("progress")} isSelected={selectedMetric === "progress"} />
+        <MetricCard icon={Zap} title="Current Streak" value={currentStreak} color="bg-[#E040FB]/20" subtitle={`Best: ${maxStreak} days`} onClick={() => setSelectedMetric("streak")} isSelected={selectedMetric === "streak"} />
+      </div>
+      <div className="grid grid-cols-3 gap-4">
+        <AchievementBadge icon={Target} title="Accuracy" value={`${successRate}% On Track`} />
+        <AchievementBadge icon={Award} title="Streak" value={`${currentStreak} Days`} />
+        <AchievementBadge icon={CalendarIcon} title="Completed" value={`${completedDays} Tasks`} />
+      </div>
+      <div className="bg-white/5 backdrop-blur-md rounded-xl p-4">
         <div className="flex justify-between text-[#E0B0FF] text-sm mb-2">
-          <span>Total Schedule Days</span>
-          <span>{totalDays}</span>
+          <span>Overall Progress</span>
+          <span>
+            {completedDays} of {totalDays} days
+          </span>
         </div>
         <div className="relative h-2 bg-[#4A148C]/20 rounded-full overflow-hidden">
-          <div className="absolute h-full bg-[#26A69A] transition-all duration-500" style={{
+          <motion.div initial={{
+          width: 0
+        }} animate={{
           width: `${completedDays / totalDays * 100}%`
-        }} />
-          <div className="absolute h-full bg-[#FF5252] transition-all duration-500" style={{
-          left: `${completedDays / totalDays * 100}%`,
-          width: `${missedDays / totalDays * 100}%`
-        }} />
+        }} transition={{
+          duration: 1,
+          ease: "easeOut"
+        }} className="absolute h-full bg-[#26A69A]" />
+          <motion.div initial={{
+          width: 0
+        }} animate={{
+          width: `${missedDays / totalDays * 100}%`,
+          x: `${completedDays / totalDays * 100}%`
+        }} transition={{
+          duration: 1,
+          ease: "easeOut"
+        }} className="absolute h-full bg-[#FF5252]" />
         </div>
-        
       </div>
-      {feedback && remainingDays === scheduleData.length ? <div className="col-span-2">
-        <div className="flex items-center w-[100%] p-4 bg-white/5 backdrop-blur-md rounded-xl gap-4 border border-[#4A148C]/30 hover:border-[#E040FB]/20">
+      <AnimatePresence mode="wait">
+        <motion.div key={feedback?.title} initial={{
+        opacity: 0,
+        y: 20
+      }} animate={{
+        opacity: 1,
+        y: 0
+      }} exit={{
+        opacity: 0,
+        y: -20
+      }} className="flex items-center p-4 backdrop-blur-md rounded-xl gap-4 border border-[#4A148C]/30 hover:border-[#E040FB]/20 transition-colors duration-200">
+          <div className={`p-3 rounded-full ${feedback?.title === "Needs Improvement" ? "bg-red-500/20" : feedback?.title === "Keep Going" ? "bg-yellow-500/20" : feedback?.title === "Great Work" ? "bg-green-500/20" : "bg-purple-500/20"}`}>
+            {feedback?.icon}
+          </div>
+          <div className="flex-1">
+            <h3 className="text-[#E0B0FF] text-sm font-semibold mb-1 tracking-wide">
+              {feedback?.title}
+            </h3>
             <p className="text-white/80 text-sm leading-snug">
-            Your journey is just beginning! Once you start completing tasks, your success rate will light up. Keep pushing forward!
+              {feedback?.message}
             </p>
-        </div>
-        </div> : <div className="col-span-2">
-            <div className="flex items-center p-4 bg-white/5 backdrop-blur-md rounded-xl gap-4 border border-[#4A148C]/30 hover:border-[#E040FB]/20 transition-colors duration-200">
-            <div className={`p-3 rounded-full ${feedback?.title === 'Needs Improvement' ? 'bg-red-500/20' : feedback?.title === 'Keep Going' ? 'bg-yellow-500/20' : feedback?.title === 'Great Work' ? 'bg-green-500/20' : 'bg-purple-500/20'}`}>
-                {feedback?.icon && React.cloneElement(feedback.icon, {
-            className: `${feedback.title === 'Needs Improvement' ? 'text-red-400' : feedback.title === 'Keep Going' ? 'text-yellow-400' : feedback.title === 'Great Work' ? 'text-green-400' : 'text-purple-400'}`
-          })}
-            </div>
-            <div className="flex-1">
-                <h3 className="text-[#E0B0FF] text-sm font-semibold mb-1 tracking-wide">
-                {feedback?.title}
-                </h3>
-                <p className="text-white/80 text-sm leading-snug">
-                {feedback?.message}
-                </p>
-            </div>
-            </div>
-        </div>}
-        </div>;
+          </div>
+        </motion.div>
+      </AnimatePresence>
+    </div>;
 };
