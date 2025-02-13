@@ -1,4 +1,7 @@
-/* Add this to your existing animations */
+@import 'tailwindcss/base';
+@import 'tailwindcss/components';
+@import 'tailwindcss/utilities';
+
 @keyframes ripple {
   0% {
     transform: translate(-50%, -50%) scale(0.5);
@@ -12,9 +15,7 @@
 .animate-ripple {
   animation: ripple 1s cubic-bezier(0.4, 0, 0.2, 1) forwards;
 }
-@import 'tailwindcss/base';
-@import 'tailwindcss/components';
-@import 'tailwindcss/utilities';
+
 
 @keyframes bounce-in {
   0% { transform: scale(0.3); opacity: 0; }
