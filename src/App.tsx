@@ -5,6 +5,7 @@ import { CalendarGenerator } from "./components/CalendarGenerator/CalendarGenera
 import { SavedSchedulePage } from "./components/SavedSchedule/SavedSchedulePage";
 import DataManagementPage from "./components/DataManagementPage";
 import { NotFoundPage } from "./components/NotFoundPage";
+import { MainPage } from "./components/SavedSchedule/ScheduleList/MainLIst";
 import { Navbar } from "./components/Navigation/Navbar";
 export function App() {
   return <Router>
@@ -15,6 +16,7 @@ export function App() {
           <Route path="/create" element={<CalendarGenerator />} />
           <Route path="/schedule/:id" element={<SavedSchedulePage />} />
           <Route path="/data" element={<DataManagementPage />} />
+          <Route path="/schelduelist" element={<MainPage />} />
           <Route path="*" element={<NotFoundPage />} />
         </Routes>
       </div>

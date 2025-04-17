@@ -1,6 +1,6 @@
 import React from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { Calendar, Home, Plus } from "lucide-react";
+import { Calendar, Home, Plus, Database, List } from "lucide-react";
 export const Navbar = () => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -9,18 +9,23 @@ export const Navbar = () => {
         <div className="flex items-center justify-between">
           <button onClick={() => navigate("/")} className="flex items-center gap-2 text-white hover:text-[#E040FB] transition-colors">
             <Calendar size={24} />
-            <span className="font-bold text-lg">Study Calendar</span>
+            <span className="font-bold text-sm sm:text-lg">Study Calendar</span>
           </button>
           <div className="flex items-center gap-4">
-            <button onClick={() => navigate("/")} className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all
-                ${location.pathname === "/" ? "text-white bg-white/10" : "text-[#E0B0FF] hover:text-white"}`}>
-              <Home size={20} />
-              <span className="hidden sm:block">Home</span>
+            <button onClick={() => navigate("/schelduelist")} className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all
+                ${location.pathname === "/schelduelist" ? "text-white bg-white/10" : "text-[#E0B0FF] hover:text-white"}`}>
+              <List size={20} />
+              <span className="hidden sm:block">Scheldue List</span>
             </button>
             <button onClick={() => navigate("/create")} className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all
                 ${location.pathname === "/create" ? "text-white bg-white/10" : "text-[#E0B0FF] hover:text-white"}`}>
               <Plus size={20} />
               <span className="hidden sm:block">New Schedule</span>
+            </button>
+            <button onClick={() => navigate("/data")} className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all
+                ${location.pathname === "/data" ? "text-white bg-white/10" : "text-[#E0B0FF] hover:text-white"}`}>
+              <Database size={20} />
+              <span className="hidden sm:block">Data Hub</span>
             </button>
           </div>
         </div>

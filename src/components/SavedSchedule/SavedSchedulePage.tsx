@@ -19,6 +19,8 @@ type ViewType = "daily" | "weekly" | "monthly";
 const getWeekDates = (date: Date): Date[] => {
   const monday = new Date(date);
   const day = monday.getDay();
+  
+  
   const diff = monday.getDate() - day + (day === 0 ? -6 : 1); // Adjust when day is Sunday
   monday.setDate(diff);
   return Array(7).fill(null).map((_, i) => {
@@ -59,6 +61,25 @@ export const SavedSchedulePage = () => {
   const [progress, setProgress] = useState(0);
   const [celebrationType, setCelebrationType] = useState<"confetti" | "achievement" | null>(null);
   const [showAchievement, setShowAchievement] = useState(false);
+  const week = (day: number) => {
+    if (day <= 7) {
+      return "Week 1"
+    } else if( day <= 14){
+      return "Week 2"
+    } else if( day <= 21){
+      return "Week 3"
+    } else if( day <= 28){
+      return "Week 4"
+    } else if( day <= 31){
+      return "Week 5"
+    } else {
+      return null
+    }
+  }
+  const month = currentDate.getMonth();
+  const currentday = currentDate.getDay();
+  const dayNames = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+  const currentWeek = week(currentDate.getDate())
   useEffect(() => {
     const schedules = getSavedSchedules();
     const found = schedules.find(s => s.id === id);
@@ -389,7 +410,9 @@ export const SavedSchedulePage = () => {
                 <ChevronLeft size={24} />
               </button>
               <button onClick={() => setCurrentDate(new Date())} className="text-white hover:text-[#E040FB] transition-colors text-lg font-medium">
-                {currentView === "daily" ? "Today" : currentView === "weekly" ? "This Week" : "This Month"}
+                {currentView === "daily" ? dayNames[currentday]  : currentView === "weekly" ? currentWeek : new Date(currentDate.getFullYear(), month).toLocaleDateString("en-US", {
+                  month: "long"}
+                )}
               </button>
               <button onClick={() => handleDateNavigation("next")} className="text-white hover:text-[#E040FB] transition-colors">
                 <ChevronRight size={24} />
