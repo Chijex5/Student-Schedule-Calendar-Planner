@@ -260,8 +260,12 @@ const isTodayMatch = now.getDate() === currentDate.getDate() && now.getMonth() =
   };
 
   const renderDailyView = () => {
-    const dateStr = currentDate.toISOString().split("T")[0];
-    const tasks = schedule?.scheduleData.filter(item => item.date === dateStr) || [];
+    const year = currentDate.getFullYear();
+    const month = String(currentDate.getMonth() + 1).padStart(2, "0");
+    const day = String(currentDate.getDate()).padStart(2, "0");
+
+    const formatted = `${year}-${month}-${day}`;
+    const tasks = schedule?.scheduleData.filter(item => item.date === formatted) || [];
     const isToday = isDateToday(currentDate);
 
     return (
@@ -320,8 +324,11 @@ const isTodayMatch = now.getDate() === currentDate.getDate() && now.getMonth() =
         </div>
         <div className="space-y-4">
           {weekdayDates.map((date, i) => {
-            const dateStr = date.toISOString().split("T")[0];
-            const tasks = schedule?.scheduleData.filter(item => item.date === dateStr) || [];
+            const year = currentDate.getFullYear();
+            const month = String(currentDate.getMonth() + 1).padStart(2, "0");
+            const day = String(currentDate.getDate()).padStart(2, "0");
+            const formatted = `${year}-${month}-${day}`;
+            const tasks = schedule?.scheduleData.filter(item => item.date === formatted) || [];
             const isToday = isDateToday(date);
 
             return (
@@ -379,8 +386,11 @@ const isTodayMatch = now.getDate() === currentDate.getDate() && now.getMonth() =
         </div>
         <div className="grid grid-cols-5 gap-4">
           {weekdayDates.map((date, i) => {
-            const dateStr = date.toISOString().split("T")[0];
-            const tasks = schedule?.scheduleData.filter(item => item.date === dateStr) || [];
+            const year = currentDate.getFullYear();
+            const month = String(currentDate.getMonth() + 1).padStart(2, "0");
+            const day = String(currentDate.getDate()).padStart(2, "0");
+            const formatted = `${year}-${month}-${day}`;
+            const tasks = schedule?.scheduleData.filter(item => item.date === formatted) || [];
             const isToday = isDateToday(date);
             const isPast = date < today;
 
@@ -455,9 +465,12 @@ const isTodayMatch = now.getDate() === currentDate.getDate() && now.getMonth() =
             }
 
             const isWeekend = date.getDay() === 0 || date.getDay() === 6;
-            const dateStr = getLocalDateString(date);
+            const year = currentDate.getFullYear();
+            const month = String(currentDate.getMonth() + 1).padStart(2, "0");
+            const day = String(currentDate.getDate()).padStart(2, "0");
+            const formatted = `${year}-${month}-${day}`;
             const tasks = !isWeekend
-              ? schedule?.scheduleData.filter((item: { date: string }) => item.date === dateStr) || []
+              ? schedule?.scheduleData.filter((item: { date: string }) => item.date === formatted) || []
               : [];
 
             const isToday = isDateToday(date);
