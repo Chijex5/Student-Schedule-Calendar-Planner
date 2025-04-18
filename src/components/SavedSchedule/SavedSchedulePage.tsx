@@ -445,7 +445,6 @@ const isTodayMatch = now.getDate() === currentDate.getDate() && now.getMonth() =
 
   const renderMonthlyView = () => {
     const monthDays = getMonthDates(currentDate);
-
     return (
       <div className="bg-white/5 backdrop-blur-md rounded-xl p-2 md:p-6">
         <div className="grid grid-cols-7 gap-1">
@@ -465,14 +464,9 @@ const isTodayMatch = now.getDate() === currentDate.getDate() && now.getMonth() =
             }
 
             const isWeekend = date.getDay() === 0 || date.getDay() === 6;
-            const year = currentDate.getFullYear();
-            const month = String(currentDate.getMonth() + 1).padStart(2, "0");
-            const day = String(currentDate.getDate()).padStart(2, "0");
-            const formatted = `${year}-${month}-${day}`;
-            const tasks = !isWeekend
-              ? schedule?.scheduleData.filter((item: { date: string }) => item.date === formatted) || []
-              : [];
-
+            const tasks = schedule?.scheduleData.filter(item => item.date === getLocalDateString(date)) || [];
+            
+            // Fixed date comparison for today
             const isToday = isDateToday(date);
 
             return (
@@ -483,7 +477,8 @@ const isTodayMatch = now.getDate() === currentDate.getDate() && now.getMonth() =
                   min-h-[38px] md:min-h-[100px]
                   p-1 md:p-2
                   rounded-lg
-                  ${isWeekend ? "bg-white/5" : getTaskColor(date, tasks[0]?.completed)}
+                  ${isWeekend ? "bg-white/5" : getTaskColor(date, tasks[0]?.completed ?? false)}
+                  ${tasks[0]?.completed ? "line-through" : ""}
                   transition-all duration-300
                   hover:bg-white/15
                   ${isToday ? "ring-1 ring-[#E040FB]" : ""}
@@ -525,15 +520,21 @@ const isTodayMatch = now.getDate() === currentDate.getDate() && now.getMonth() =
                       )}
                     </div>
                     <div className="hidden md:block space-y-1 mt-1">
-                      {tasks.map((task: { subject: string; completed: boolean }, j: number) => (
+                    {tasks.map((task: { subject: string; completed?: boolean }, j: number) => {
+                      console.log(`Task ${j + 1}:`, task); // ✅ This logs the task during render
+
+                      return (
                         <div
                           key={j}
                           className={`text-[#E0B0FF] text-xs truncate ${task.completed ? "line-through" : ""}`}
                           title={task.subject}
                         >
                           • {task.subject}
+                          <h1 className="text-[#E0B0FF] text-xs truncate">{String(task.completed)}</h1>
                         </div>
-                      ))}
+                      );
+                    })}
+
                     </div>
                   </>
                 )}
