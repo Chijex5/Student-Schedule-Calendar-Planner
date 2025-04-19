@@ -57,6 +57,17 @@ export const updateTaskCompletion = (scheduleId: string, date: string, completed
   localStorage.setItem('schedules', JSON.stringify(schedules));
   return schedule;
 };
+
+export const UpdateScheldueName = (scheldueId: string, newName: string) => {
+  const scheldules = getSavedSchedules();
+  const scheldueIndex = scheldules.findIndex(s => s.id === scheldueId);
+  if (scheldueIndex === -1) return null;
+  const scheldule = scheldules[scheldueIndex]
+  scheldule.name = newName;
+  scheldules[scheldueIndex] = scheldule;
+  localStorage.setItem('schedules', JSON.stringify(scheldules));
+  return scheldule;
+}
 export const removeScheduleById = (scheduleId: string): SavedSchedule[] => {
   const schedules = getSavedSchedules();
   const updatedSchedules = schedules.filter(schedule => schedule.id !== scheduleId);

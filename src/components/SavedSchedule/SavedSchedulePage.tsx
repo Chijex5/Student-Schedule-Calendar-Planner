@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useParams } from "react-router-dom";
 import { LiquidProgressBar } from "./LiquidProgressBar";
 import { ViewToggle } from "./ViewToggle";
@@ -7,9 +7,9 @@ import { ChevronLeft, ChevronRight, Calendar, List, Grid } from "lucide-react";
 import { TaskCard } from "./TaskCard";
 import Confetti from "react-confetti";
 import { ReportComponent } from "./ReportComponent";
-import { updateTaskCompletion, getTaskStatus } from "../../utils/scheduleStorage";
+import { updateTaskCompletion, getTaskStatus, UpdateScheldueName } from "../../utils/scheduleStorage";
 import { motion, AnimatePresence } from "framer-motion";
-import { Star, Trophy, Sparkles } from "lucide-react";
+import { Star, Trophy, Sparkles, Edit3 } from "lucide-react";
 import { NotFoundPage } from "../NotFoundPage";
 
 // Define the ViewType type
@@ -53,10 +53,14 @@ const getMonthDates = (date: Date): (Date | null)[] => {
 export const SavedSchedulePage = () => {
   const { id } = useParams<{ id: string }>();
   const [schedule, setSchedule] = useState<SavedSchedule | null>(null);
+  const [isEditing, setIsEditing] = useState(false);
+  const [name, setName] = useState(schedule?.name ||  "Scheldue Name");
+  const inputRef = useRef<HTMLInputElement>(null);
   const [currentView, setCurrentView] = useState<ViewType>("daily");
   const [currentDate, setCurrentDate] = useState(new Date());
   const [notFound, setNotFound] = useState(false);
   const [progress, setProgress] = useState(0);
+  const [achievement, setAchievement] = useState(0);
   const [celebrationType, setCelebrationType] = useState<"confetti" | "achievement" | null>(null);
   const [showAchievement, setShowAchievement] = useState(false);
   const [calendarViewMobile, setCalendarViewMobile] = useState(true);
@@ -90,11 +94,33 @@ export const SavedSchedulePage = () => {
     if (found) {
       setSchedule(found);
       const completed = found.scheduleData.filter(item => item.completed).length;
-      setProgress(Math.round((completed / found.scheduleData.length) * 100));
+      const today = new Date();
+      setName(found.name);
+      const reached = found.scheduleData.filter(item => new Date(item.date) <= today).length;
+      setAchievement(Math.round((completed / reached) * 100))
+      setProgress(Math.round((reached / found.scheduleData.length) * 100));
     } else {
       setNotFound(true);
     }
   }, [id]);
+
+  const handleEditClick = () => {
+    setIsEditing(true);
+    setTimeout(() => {
+      inputRef.current?.focus();
+    }, 100);
+  };
+
+  const handleBlur = () => {
+    setIsEditing(false);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      setIsEditing(false);
+      UpdateScheldueName(schedule?.id!, name);
+    }
+  };
 
   const handleViewChange = (view: ViewType) => {
     setCurrentView(view);
@@ -132,7 +158,10 @@ const isTodayMatch = now.getDate() === currentDate.getDate() && now.getMonth() =
     const updated = updateTaskCompletion(id, date, complete);
     if (updated) {
       setSchedule(updated);
+      const today = new Date();
+      setName(updated.name)
       const completed = updated.scheduleData.filter(item => item.completed).length;
+      const reached = updated.scheduleData.filter(item => new Date(item.date) <= today).length;
       setCelebrationType("confetti");
       setShowAchievement(true);
       setTimeout(() => {
@@ -142,7 +171,8 @@ const isTodayMatch = now.getDate() === currentDate.getDate() && now.getMonth() =
         setCelebrationType(null);
         setShowAchievement(false);
       }, 4000);
-      setProgress(Math.round((completed / updated.scheduleData.length) * 100));
+      setAchievement(Math.round((completed / reached) * 100))
+      setProgress(Math.round((reached / updated.scheduleData.length) * 100));
     }
   };
 
@@ -453,9 +483,9 @@ const isTodayMatch = now.getDate() === currentDate.getDate() && now.getMonth() =
               {day}
             </div>
           ))}
-          {["M", "T", "W", "T", "F", "S", "S"].map(day => (
-            <div key={day} className="md:hidden text-[#E0B0FF] text-xs text-center p-1">
-              {day}
+          {[{day:"M", id:1}, {day:"T", id:2},{day:"W", id:`3`},{day:"T", id:4},{day:"F", id:5},{day:"S", id:6},{day:"S", id:7}].map(day => (
+            <div key={day.id} className="md:hidden text-[#E0B0FF] text-xs text-center p-1">
+              {day.day}
             </div>
           ))}
           {monthDays.map((date: Date | null, i: number) => {
@@ -520,8 +550,7 @@ const isTodayMatch = now.getDate() === currentDate.getDate() && now.getMonth() =
                       )}
                     </div>
                     <div className="hidden md:block space-y-1 mt-1">
-                    {tasks.map((task: { subject: string; completed?: boolean }, j: number) => {
-                      console.log(`Task ${j + 1}:`, task); // ✅ This logs the task during render
+                    {tasks.map((task: { subject: string; completed?: boolean }, j: number) => { // ✅ This logs the task during render
 
                       return (
                         <div
@@ -530,7 +559,6 @@ const isTodayMatch = now.getDate() === currentDate.getDate() && now.getMonth() =
                           title={task.subject}
                         >
                           • {task.subject}
-                          <h1 className="text-[#E0B0FF] text-xs truncate">{String(task.completed)}</h1>
                         </div>
                       );
                     })}
@@ -679,7 +707,24 @@ const isTodayMatch = now.getDate() === currentDate.getDate() && now.getMonth() =
     <main className="min-h-screen w-full bg-[#2D0A54] px-4 py-8 md:px-8">
       <div className="max-w-6xl mx-auto">
         <div className="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
-          <h1 className="text-white text-3xl font-bold">{schedule.name}</h1>
+          <div className="flex gap-4 items-center">
+            {isEditing ? (
+              <input
+                ref={inputRef}
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                onBlur={handleBlur}
+                onKeyDown={handleKeyDown}
+                className="bg-transparent border-b-2 border-white text-white text-3xl font-bold outline-none"
+              />
+            ) : (
+              <h1 className="text-white text-3xl font-bold">{name}</h1>
+            )}
+            <button onClick={handleEditClick}>
+              <Edit3 className="text-white" />
+            </button>
+          </div>
           <ViewToggle currentView={currentView} onViewChange={handleViewChange} />
         </div>
         <div className="grid md:grid-cols-[2fr_1fr] gap-8">
@@ -721,7 +766,7 @@ const isTodayMatch = now.getDate() === currentDate.getDate() && now.getMonth() =
           </div>
           <div className="bg-white/5 backdrop-blur-md rounded-xl p-6">
             <h2 className="text-[#E040FB] text-xl font-bold mb-6">Overall Progress</h2>
-            <LiquidProgressBar progress={progress} />
+            <LiquidProgressBar progress={progress} achievement={achievement}/>
           </div>
           <div className="bg-white/5 backdrop-blur-md rounded-xl p-6">
             <ReportComponent scheduleData={schedule.scheduleData} />

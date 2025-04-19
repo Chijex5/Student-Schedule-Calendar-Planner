@@ -7,7 +7,7 @@ export const Navbar = () => {
   return <nav className="fixed top-0 left-0 right-0 bg-[#2D0A54]/80 backdrop-blur-md border-b border-white/10 z-50">
       <div className="max-w-6xl mx-auto px-4 py-3">
         <div className="flex items-center justify-between">
-          <button onClick={() => navigate("/")} className="flex items-center gap-2 text-white hover:text-[#E040FB] transition-colors">
+          <button onClick={() => navigate("/")} className={`flex items-center gap-2 transition-colors ${location.pathname === "/" ? "text-[#E040FB]" : "text-white hover:text-[#E0B0FF]"}`}>
             <Calendar size={24} />
             <span className="font-bold text-sm sm:text-lg">Study Calendar</span>
           </button>
