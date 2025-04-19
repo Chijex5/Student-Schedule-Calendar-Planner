@@ -2,9 +2,11 @@ import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { Trophy, Star } from "lucide-react";
 export const LiquidProgressBar = ({
-  progress
+  progress,
+  achievement
 }: {
   progress: number;
+  achievement: number
 }) => {
   const [animatedProgress, setAnimatedProgress] = useState(0);
   const [showCelebration, setShowCelebration] = useState(false);
@@ -102,7 +104,7 @@ export const LiquidProgressBar = ({
         }} transition={{
           delay: 0.4 + i * 0.1
         }}>
-              <Star className={`w-4 h-4 ${i < Math.floor(progress / 20) ? "text-[#E040FB]" : "text-[#4A148C]"}`} fill={i < Math.floor(progress / 20) ? "#E040FB" : "transparent"} />
+              <Star className={`w-4 h-4 ${i < Math.floor(achievement / 20) ? "text-[#E040FB]" : "text-[#4A148C]"}`} fill={i < Math.floor(achievement / 20) ? "#E040FB" : "transparent"} />
             </motion.div>)}
         </div>
       </motion.div>
