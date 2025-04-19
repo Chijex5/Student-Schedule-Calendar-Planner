@@ -354,11 +354,7 @@ const isTodayMatch = now.getDate() === currentDate.getDate() && now.getMonth() =
         </div>
         <div className="space-y-4">
           {weekdayDates.map((date, i) => {
-            const year = currentDate.getFullYear();
-            const month = String(currentDate.getMonth() + 1).padStart(2, "0");
-            const day = String(currentDate.getDate()).padStart(2, "0");
-            const formatted = `${year}-${month}-${day}`;
-            const tasks = schedule?.scheduleData.filter(item => item.date === formatted) || [];
+            const tasks = schedule?.scheduleData.filter(item => item.date === getLocalDateString(date)) || [];
             const isToday = isDateToday(date);
 
             return (
@@ -416,9 +412,6 @@ const isTodayMatch = now.getDate() === currentDate.getDate() && now.getMonth() =
         </div>
         <div className="grid grid-cols-5 gap-4">
           {weekdayDates.map((date, i) => {
-            const year = currentDate.getFullYear();
-            const month = String(currentDate.getMonth() + 1).padStart(2, "0");
-            const day = String(currentDate.getDate()).padStart(2, "0");
             const tasks = schedule?.scheduleData.filter(item => item.date === getLocalDateString(date)) || [];
             const isToday = isDateToday(date);
             const isPast = date < today;
